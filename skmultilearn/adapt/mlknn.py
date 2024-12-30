@@ -184,7 +184,7 @@ class MLkNN(MLClassifierBase):
         ]
 
         for instance in range(self._num_instances):
-            deltas = label_info[neighbors[instance], :].sum(axis=0)
+            deltas = label_info[neighbors[instance], :].sum(axis=0).astype('int')
             for label in range(self._num_labels):
                 if label_info[instance, label] == 1:
                     c[label, deltas[0, label]] += 1

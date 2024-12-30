@@ -3,6 +3,8 @@ from __future__ import absolute_import
 import random
 
 import numpy as np
+from itertools import combinations
+from scipy.special import comb
 
 from .base import LabelSpaceClustererBase
 
@@ -90,7 +92,20 @@ class RandomLabelSpaceClusterer(LabelSpaceClustererBase):
         arrray of arrays of label indexes (numpy.ndarray)
             label space division, each sublist represents labels that are in that community
         """
+        
+        if self.allow_overlap:
+            L = range(y.shape[1])
+            k_labelsets = list(combinations(L, self.cluster_size))
+            
+            if self.cluster_count > len(k_labelsets):
+                print("`cluster_count` cannot be more than y.shape[1] over `cluster_size`.")
+                self.cluster_count = comb(y.shape[1], self.cluster_size)
+            
+            label_sets = random.sample(k_labelsets, self.cluster_count)
+            return np.array(label_sets)
 
+        # We reach this if the clusters cannot overlap
+        # TODO: should be checked whether this works as intended with e.g. RakelD
         if (self.cluster_count + 1) * self.cluster_size < y.shape[1]:
             raise ValueError(
                 "Cannot include all of {} labels in {} clusters of {} labels".format(
@@ -126,4 +141,4 @@ class RandomLabelSpaceClusterer(LabelSpaceClustererBase):
                 for label in range(y.shape[1])
             )
 
-        return np.array(label_sets)
+        return label_sets
